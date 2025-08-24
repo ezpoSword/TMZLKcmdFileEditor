@@ -1,0 +1,2 @@
+# TMZLKcmdFileEditor
+[Folder is Deleted]

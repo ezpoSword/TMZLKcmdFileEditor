@@ -1,6 +1,6 @@
 @echo off
-:: Türkçe karakterler için kod sayfası
-chcp 65001
+:: UTF-8 ve Türkçe karakterler
+chcp 65001 >nul
 
 :: Yönetici izni kontrolü
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
@@ -15,20 +15,20 @@ if %errorlevel% neq 0 (
 )
 
 :: Başlık ve menü
-title ★ Güvenlikli Sistem ★
-mode con: cols=60 lines=20
+title ★ Temizlik Sistemi ★
+mode con: cols=70 lines=25
 color 0a
 
 :menu
 cls
 echo.
-echo  ┌────────────────────────────────────────────┐
-echo  │              ★ Sistem Menüsü ★             │
-echo  ├────────────────────────────────────────────┤
-echo  │   [1] Temizlik Başlat                      │
-echo  │   [2] Sistem Kontrolü                      │
-echo  │   [3] Çıkış                                │
-echo  └────────────────────────────────────────────┘
+echo  ┌───────────────────────────────────────────────┐
+echo  │               ★ Sistem Menüsü ★               │
+echo  ├───────────────────────────────────────────────┤
+echo  │   [1] Gereksiz Dosyaları Temizle              │
+echo  │   [2] Sistem Kontrolü                          │
+echo  │   [3] Çıkış                                   │
+echo  └───────────────────────────────────────────────┘
 echo.
 set /p secim= Seçenek girin: 
 
@@ -41,7 +41,22 @@ goto hata
 cls
 echo Temizlik başlatılıyor...
 call :loading
-echo ✔ Tamamlandı!
+
+:: Temp klasörleri temizleme
+echo ✔ TEMP klasörleri temizleniyor...
+del /q /f /s %TEMP%\* >nul 2>&1
+del /q /f /s C:\Windows\Temp\* >nul 2>&1
+
+:: Prefetch temizleme
+echo ✔ Prefetch temizleniyor...
+del /q /f /s C:\Windows\Prefetch\* >nul 2>&1
+
+:: Çöp kutusu temizleme
+echo ✔ Çöp kutusu temizleniyor...
+powershell -command "Clear-RecycleBin -Force" >nul 2>&1
+
+echo.
+echo ★ Temizlik tamamlandı! ★
 pause
 goto menu
 
@@ -54,7 +69,6 @@ pause
 goto menu
 
 :hata
-:: Basit "titreme" efekti (yanlış seçimde)
 echo.
 echo Yanlış seçim yaptınız! Program kapanıyor...
 ping -n 2 127.0.0.1 >nul

@@ -10,14 +10,57 @@ echo 3) Bloatware Uygulama Kaldirma
 echo 4) Hepsi
 set /p opt=Secenek Secin (1-4): 
 
-if %opt%==1 powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "Remove-Item -Path $env:TEMP -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:WINDIR\\Temp -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:LOCALAPPDATA\\Temp -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:SystemRoot\\SoftwareDistribution\\Download -Recurse -Force -ErrorAction SilentlyContinue; Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+:: Girdiyi kontrol et
+if "%opt%"=="" goto :end
+if "%opt%"=="1" goto :safe
+if "%opt%"=="2" goto :deep
+if "%opt%"=="3" goto :bloat
+if "%opt%"=="4" goto :all
+goto :end
 
-if %opt%==2 powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath dism.exe -ArgumentList '/Online','/Cleanup-Image','/StartComponentCleanup' -Wait -NoNewWindow"
+:safe
+powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
+"Try {Remove-Item -Path $env:TEMP -Recurse -Force -ErrorAction SilentlyContinue} Catch{}; ^
+Try {Remove-Item -Path $env:WINDIR\Temp -Recurse -Force -ErrorAction SilentlyContinue} Catch{}; ^
+Try {Remove-Item -Path $env:LOCALAPPDATA\Temp -Recurse -Force -ErrorAction SilentlyContinue} Catch{}; ^
+Try {Remove-Item -Path $env:SystemRoot\SoftwareDistribution\Download -Recurse -Force -ErrorAction SilentlyContinue} Catch{}; ^
+Try {Clear-RecycleBin -Force -ErrorAction SilentlyContinue} Catch{}"
+goto :done
 
-if %opt%==3 powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "foreach ($pkg in 'Microsoft.3DBuilder','Microsoft.Microsoft3DViewer','Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.Messaging','Microsoft.MicrosoftOfficeHub','Microsoft.MicrosoftSolitaireCollection','Microsoft.MicrosoftStickyNotes','Microsoft.MixedReality.Portal','Microsoft.OneConnect','Microsoft.People','Microsoft.Print3D','Microsoft.SkypeApp','Microsoft.Whiteboard','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.YourPhone','Microsoft.ZuneMusic','Microsoft.ZuneVideo'){Get-AppxPackage -Name $pkg -AllUsers -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue; Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $pkg } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null}"
+:deep
+powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
+"Start-Process -FilePath dism.exe -ArgumentList '/Online','/Cleanup-Image','/StartComponentCleanup' -Wait -NoNewWindow"
+goto :done
 
-if %opt%==4 powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "Remove-Item -Path $env:TEMP -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:WINDIR\\Temp -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:LOCALAPPDATA\\Temp -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:SystemRoot\\SoftwareDistribution\\Download -Recurse -Force -ErrorAction SilentlyContinue; Clear-RecycleBin -Force -ErrorAction SilentlyContinue; Start-Process -FilePath dism.exe -ArgumentList '/Online','/Cleanup-Image','/StartComponentCleanup' -Wait -NoNewWindow; foreach ($pkg in 'Microsoft.3DBuilder','Microsoft.Microsoft3DViewer','Microsoft.BingNews','Microsoft.BingWeather','Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.Messaging','Microsoft.MicrosoftOfficeHub','Microsoft.MicrosoftSolitaireCollection','Microsoft.MicrosoftStickyNotes','Microsoft.MixedReality.Portal','Microsoft.OneConnect','Microsoft.People','Microsoft.Print3D','Microsoft.SkypeApp','Microsoft.Whiteboard','Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider','Microsoft.XboxSpeechToTextOverlay','Microsoft.YourPhone','Microsoft.ZuneMusic','Microsoft.ZuneVideo'){Get-AppxPackage -Name $pkg -AllUsers -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue; Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $pkg } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null}" 
+:bloat
+powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
+"$bloat = @(
+ 'Microsoft.3DBuilder','Microsoft.Microsoft3DViewer','Microsoft.BingNews','Microsoft.BingWeather',
+ 'Microsoft.GetHelp','Microsoft.Getstarted','Microsoft.Messaging','Microsoft.MicrosoftOfficeHub',
+ 'Microsoft.MicrosoftSolitaireCollection','Microsoft.MicrosoftStickyNotes','Microsoft.MixedReality.Portal',
+ 'Microsoft.OneConnect','Microsoft.People','Microsoft.Print3D','Microsoft.SkypeApp','Microsoft.Whiteboard',
+ 'Microsoft.Xbox.TCUI','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider',
+ 'Microsoft.XboxSpeechToTextOverlay','Microsoft.YourPhone','Microsoft.ZuneMusic','Microsoft.ZuneVideo'
+);
+foreach ($pkg in $bloat) {
+  Try {Get-AppxPackage -Name $pkg -AllUsers -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue} Catch{};
+  Try {Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $pkg } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null} Catch{}
+}"
+goto :done
 
+:all
+call :safe
+call :deep
+call :bloat
+goto :done
+
+:done
 echo.
 echo Islemler Tamamlandi!
+pause
+goto :eof
+
+:end
+echo.
+echo Gecersiz secim yaptiniz!
 pause

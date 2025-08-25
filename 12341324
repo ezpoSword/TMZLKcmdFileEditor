@@ -1,4 +1,7 @@
 @echo off
+:: Türkçe karakterler için kod sayfası
+chcp 857 >nul
+
 :: Yönetici izni kontrolü
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if %errorlevel% neq 0 (
@@ -40,7 +43,7 @@ echo Temizlik başlatılıyor...
 call :loading
 echo ✔ Tamamlandı!
 pause
-exit
+goto menu
 
 :kontrol
 cls
@@ -48,22 +51,23 @@ echo Sistem kontrol ediliyor...
 call :loading
 echo ✔ Her şey normal!
 pause
-exit
+goto menu
 
 :hata
-:: Pencere titretme efekti (yanlış seçimde sadece 1 kere çalışır)
-for /l %%a in (1,1,4) do (
-    powershell -command "$pos = (Get-Window -ProcessId $PID).Top; (Get-Window -ProcessId $PID).Left += 5; Start-Sleep -Milliseconds 50; (Get-Window -ProcessId $PID).Left -= 5; Start-Sleep -Milliseconds 50" >nul 2>&1
-)
+:: Basit "titreme" efekti (yanlış seçimde)
+echo.
 echo Yanlış seçim yaptınız! Program kapanıyor...
-timeout /t 2 >nul
+ping -n 2 127.0.0.1 >nul
 exit
 
 :loading
 setlocal enabledelayedexpansion
 set "bar=[----------]"
 for /l %%i in (1,1,10) do (
-    set "bar=!bar:~0,%%i!!=!"
+    set "bar=["
+    for /l %%j in (1,1,%%i) do set "bar=!bar!#"
+    for /l %%k in (%%i,1,10) do set "bar=!bar!-"
+    set "bar=!bar!]"
     <nul set /p="!bar! `r"
     ping -n 2 localhost >nul
 )

@@ -1,5 +1,6 @@
 @echo off
 :: Türkçe karakterler için kod sayfası
+chcp 65001 >nul
 chcp 857 >nul
 
 :: Yönetici izni kontrolü

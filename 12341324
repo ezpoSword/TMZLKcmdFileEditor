@@ -1,7 +1,6 @@
 @echo off
 :: Türkçe karakterler için kod sayfası
-chcp 65001 >nul
-chcp 857 >nul
+chcp 65001
 
 :: Yönetici izni kontrolü
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
